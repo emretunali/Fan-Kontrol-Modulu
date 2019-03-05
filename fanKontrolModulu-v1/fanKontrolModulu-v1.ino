@@ -9,7 +9,7 @@
   *            Copyright 2012-2019 (C) Emre TUNALI
   ******************************************************************************
   * @attention
-  * V1.0.0 - 
+  * V1.0.0 - Geliştirilmeye devam ediliyor. Kullanmayınız.
   *        - 
   ******************************************************************************
   */
@@ -42,7 +42,6 @@ void setup()
   pinMode(buzzer, OUTPUT);
   pinMode(upButton, INPUT_PULLUP);
   pinMode(downButton, INPUT_PULLUP);
-  
   
   
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3D))
