@@ -18,6 +18,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <FlexiTimer2.h>
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -26,6 +27,9 @@
 
 #define ADC_FILTER(input, alpha, prior) (((long)input * (256 - alpha) + ((long)prior * alpha))) >> 8
 #define ADCFILTER_CLT  180
+
+#define CALIBRATION_TABLE_SIZE 512
+#define CALIBRATION_TEMPERATURE_OFFSET 40
 
 static byte fanHIGH = HIGH;
 static byte fanLOW = LOW;
@@ -54,11 +58,13 @@ int fanHyster2 = 0;
 
 unsigned int tempReading;
 
+byte cltCalibrationTable[CALIBRATION_TABLE_SIZE];
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(pinFan1, OUTPUT);
   pinMode(pinFan2, OUTPUT);
   pinMode(buzzer, OUTPUT);
@@ -80,6 +86,9 @@ void setup()
 
   fanOn1 = false;
   fanOn2 = false;
+
+  FlexiTimer2::set(100, readCLT);    //100ms
+  FlexiTimer2::start();
 }
 
 void fanControl1()
@@ -121,7 +130,8 @@ void readCLT()
   tempReading = analogRead(pinCLT);
   tempReading = fastMap1023toX(analogRead(pinCLT), 511); //Get the current raw CLT value
   cltADC = ADC_FILTER(tempReading, ADCFILTER_CLT, cltADC);
-  //coolant = cltCalibrationTable[currentStatus.cltADC] - CALIBRATION_TEMPERATURE_OFFSET;
+  //coolant = cltCalibrationTable[cltADC] - CALIBRATION_TEMPERATURE_OFFSET;
+  Serial.println(cltADC);
 }
 
 void loop()
