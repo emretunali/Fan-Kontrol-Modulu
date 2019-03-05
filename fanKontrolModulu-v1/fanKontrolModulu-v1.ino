@@ -128,7 +128,7 @@ void fanControl2()
 void readCLT()
 {
   tempReading = analogRead(pinCLT);
-  tempReading = fastMap1023toX(analogRead(pinCLT), 511); //Get the current raw CLT value
+  tempReading = fastMap1023toX(analogRead(pinCLT), 511);
   cltADC = ADC_FILTER(tempReading, ADCFILTER_CLT, cltADC);
   //coolant = cltCalibrationTable[cltADC] - CALIBRATION_TEMPERATURE_OFFSET;
   Serial.println(cltADC);
