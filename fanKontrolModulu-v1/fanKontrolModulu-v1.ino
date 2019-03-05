@@ -44,6 +44,7 @@ void setup()
   pinMode(downButton, INPUT_PULLUP);
   
   
+  
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3D))
   {
     Serial.println(F("OLED BAGLANTI HATASI"));
