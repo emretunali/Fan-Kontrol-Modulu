@@ -1,0 +1,19 @@
+Kullanılan Proteus Sürümü : 8.10 SP3
+
+Arduino similasyonu için proteus'a yüklemeniz gereken dosyaları lütfen proteus sürümünüze göre
+aşağıdaki dizin yolunu takip ederek kopyalayınız.
+
+Proteus kütüphane içeriği
+
+Proteus Arduino Mega1280
+Proteus Arduino UNO
+Proteus Arduino Pro Mini
+Proteus Arduino Mega2560
+Proteus Arduino Nano
+Proteus Arduino Mini
+
+Proteus v8.10 SP3
+
+C:\Program Files\Labcenter Electronics\Proteus 8 Professional\DATA\LIBRARY (32 bit işletim sistemi için)
+
+C:\Program Files (x86)\Labcenter Electronics\Proteus 8 Professional\DATA\LIBRARY (64 bit işletim sistemi için)
