@@ -1,50 +1,44 @@
 /**
   ******************************************************************************
-  * @file      fanKontrolModulu-v1.ino
+  * @file      fanKontrolModulu.ino
   * @author    Emre TUNALI
-  * @version   V1.0.0
-  * @date      05 - Mart - 2019
+  * @version   V1.0.1
+  * @date      01 - Aralık - 2020
   * @Copyright Emre TUNALI - Simple fan control module for the Arduino Nano, 
   *            Pro Mini, Uno platform
-  *            Copyright 2012-2019 (C) Emre TUNALI
+  *            Copyright 2012-2020 (C) Emre TUNALI
   ******************************************************************************
   * @attention
   * V1.0.0 - Geliştirilmeye devam ediliyor. Kullanmayınız.
+  * V1.0.1 - Geliştirilmeye devam ediliyor. Kullanmayınız.
+  *           ( 2x16 LCD eklendi. )
+  *           ( Giriş çıkış tanımları yapıldı. )
   *        - 
   ******************************************************************************
   */
   
-#include <SPI.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <FlexiTimer2.h>
+#include <LiquidCrystal.h>
+#include "src/FlexiTimer2.h"
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
+const int pinCLT = A0;
+const int pinFan1 = 5;
+const int pinFan2 = 4;
+const int buzzer = 12;
+const int upButton = 2;
+const int downButton = 3;
 
-#define OLED_RESET     4
-
-#define ADC_FILTER(input, alpha, prior) (((long)input * (256 - alpha) + ((long)prior * alpha))) >> 8
-#define ADCFILTER_CLT  180
-
-#define CALIBRATION_TABLE_SIZE 512
-#define CALIBRATION_TEMPERATURE_OFFSET 40
+const int rs = 11, en = 10, d4 = 9, d5 = 8, d6 = 7, d7 = 6;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 static byte fanHIGH = HIGH;
 static byte fanLOW = LOW;
 bool fanOn1;
 bool fanOn2;
 
-const int pinCLT = A0;
-const int pinFan1 = 8;
-const int pinFan2 = 9;
-const int buzzer = 10;
-const int upButton = 2;
-const int downButton = 3;
-
+int cltSensorRaw=0;
+int cltSensorRaw2=0;
+double Temp=0;
 int coolant = 0;
-int cltADC = 0;
 
 int warningTemp = 0;
 
@@ -56,38 +50,27 @@ int onTemp2 = 0;
 int offTemp2 = 0;
 int fanHyster2 = 0;
 
-unsigned int tempReading;
-
-byte cltCalibrationTable[CALIBRATION_TABLE_SIZE];
-
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
 void setup()
 {
   Serial.begin(115200);
+  
   pinMode(pinFan1, OUTPUT);
   pinMode(pinFan2, OUTPUT);
   pinMode(buzzer, OUTPUT);
-  pinMode(pinCLT, INPUT);
+  //pinMode(pinCLT, INPUT);
   pinMode(upButton, INPUT_PULLUP);
   pinMode(downButton, INPUT_PULLUP);
 
   digitalWrite(pinFan1, fanLOW);
   digitalWrite(pinFan2, fanLOW);
   digitalWrite(buzzer, LOW);
-  
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3D))
-  {
-    Serial.println(F("OLED BAGLANTI HATASI"));
-    for(;;);
-  }
-  display.clearDisplay();
-  display.display();
+
+  lcd.begin(16, 2);
 
   fanOn1 = false;
   fanOn2 = false;
 
-  FlexiTimer2::set(100, readCLT);    //100ms
+  FlexiTimer2::set(10, readCLT);
   FlexiTimer2::start();
 }
 
@@ -127,19 +110,21 @@ void fanControl2()
 
 void readCLT()
 {
-  tempReading = analogRead(pinCLT);
-  tempReading = fastMap1023toX(analogRead(pinCLT), 511);
-  cltADC = ADC_FILTER(tempReading, ADCFILTER_CLT, cltADC);
-  //coolant = cltCalibrationTable[cltADC] - CALIBRATION_TEMPERATURE_OFFSET;
-  Serial.println(cltADC);
+  cltSensorRaw = analogRead(pinCLT);
+  cltSensorRaw2= map(cltSensorRaw,0,1023,1023,0);
+
+  Temp = log(((10240000/cltSensorRaw2) - 10000));
+  Temp = 1 / (0.001129148 + (0.000234125 + (0.0000000876741 * Temp * Temp ))* Temp );
+  coolant = Temp - 273.15;
 }
 
 void loop()
 {
-  
-}
+  fanControl1();
+  fanControl2();
 
-int fastMap1023toX(unsigned long x, int out_max)
-{
-  return (x * out_max) >> 10;
+  lcd.setCursor(0, 0);
+  lcd.print(coolant);
+  
+  
 }
